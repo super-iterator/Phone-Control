@@ -14,6 +14,8 @@
   <preference name="DisallowOverscroll" value="true"/>
   <preference name="android-minSdkVersion" value="14" />
 
+  <!-- Increasing load timeout, so we don't get cordovaWebView timout Error -->
+  <preference name="loadUrlTimeoutValue" value="60000" />
 
   <preference name="BackupWebStorage" value="none"/>
   <preference name="SplashScreen" value="screen"/>
