@@ -22,9 +22,11 @@ angular.module('starter', [ 'ionic'])
             //////// phone call trap works anywhere in the code, but must be insdie $ionicPlatform.ready(...)
             PhoneCallTrap.onCall(function(state) {
 
+                console.log('Inside normal operation');
+
                 switch (state.state) {
                     case "RINGING":
-                        alert("Phone is ringing: " + state.number);
+                        console.log("Phone is ringing: " + state.number);
 
                         try {
                             // Event handler on any database error
@@ -100,16 +102,18 @@ angular.module('starter', [ 'ionic'])
 
 
       $ionicPlatform.on('pause', function() {
-                 alert("App Is Paused");
+                 console.log("App Is Paused");
 
                  var db = new PouchDB('callersDB');
 
                  //////// phone call trap works anywhere in the code, but must be insdie $ionicPlatform.ready(...)
                  PhoneCallTrap.onCall(function(state) {
 
+                     console.log('Inside pause state');
+
                      switch (state.state) {
                          case "RINGING":
-                             alert("Phone is ringing: " + state.number);
+                             console.log("Phone is ringing: " + state.number);
 
                              try {
                                  // Event handler on any database error
@@ -134,31 +138,13 @@ angular.module('starter', [ 'ionic'])
                                          params.webService.get()
                                              .success(function  (data, status, headers, config) {
                                                  console.log('Got response from server');
-                                                 console.log(data);
                                                  console.log(status);
 
                                              })
                                              .error(function  (data, status, headers, config) {
                                                  console.log('Error on Webservice');
-                                                 console.log(data);
                                                  console.log(status);
                                              })
-
-                                         /// works
-                                         // var promise = params.http.get('http://192.168.0.3:1337/users')
-                                         //
-                                         // promise
-                                         //     .success(function  (data, status, headers, config) {
-                                         //         console.log('loggging web service: ');
-                                         //         console.log('Got response from server');
-                                         //         console.log(status);
-                                         //         // console.log(response);
-                                         //     })
-                                         //     .error(function  (data, status, headers, config) {
-                                         //         console.log('Error on Webservice');
-                                         //         console.log(status); // 0 for error, 200 for success
-                                         //     })
-
 
                                          }
                                  });
@@ -218,37 +204,18 @@ angular.module('starter', [ 'ionic'])
 
 
     $scope.$on('getAll' , function(event,items) {
-        console.log('ITEMS POPULATED TYPE AND VALUE');
-        console.log(items);
+        console.log('POPULATING ITEMS ON getAll');
         $scope.items = items
     });
 
     $scope.$on('updateContacts' , function(event,items) {
-        console.log('Contacts update');
-        console.log(items);
+        console.log('Contacts update on updateContacts');
         $scope.items = items
     });
 
-
-
-    webService.get()
-        .success(function  (data, status, headers, config) {
-            console.log('Got response from server');
-
-        })
-        .error(function  (data, status, headers, config) {
-            console.log('Error on Webservice');
-            console.log(data);
-            console.log(status);
-        })
-
-
-
-
     $scope.removeContact = function (item) {
 
-        console.log('Incoming value: ' + item);
-        console.log(Object.keys(item)); //["id", "key", "value", "doc", "$$hashKey"]
+        //console.log(Object.keys(item)); //["id", "key", "value", "doc", "$$hashKey"]
 
         console.log(item.id);
         console.log(item.key);
@@ -256,7 +223,6 @@ angular.module('starter', [ 'ionic'])
 
         db.get(item.id).then(function  (element) {
             console.log('Removing .. ' + element);
-            console.log(Object.keys(element));
             db.remove(element);
         }).then(function  (result) {
             console.log('Removed with DB response: ' + result);
@@ -408,7 +374,6 @@ angular.module('starter', [ 'ionic'])
     db.get('deviceIp',function  (err , doc) {
         if(!err){
             console.log('Got a device IP');
-            console.log(doc);
             console.log(doc._id);
             ip = doc.ip
         } else {
@@ -432,6 +397,7 @@ angular.module('starter', [ 'ionic'])
 
     myFactory.get = function  () {
         // return $http(req)
+        console.log('Invoking the URL');
         return $http.get(URL)
     }
     return myFactory
