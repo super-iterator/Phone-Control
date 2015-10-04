@@ -22,20 +22,13 @@ angular.module('starter', [ 'ionic'])
             //////// phone call trap works anywhere in the code, but must be insdie $ionicPlatform.ready(...)
             PhoneCallTrap.onCall(function(state) {
 
-                // console.log('logging state: ..');
-                // console.log(Object.keys(state));
-                // console.log(state.state);
-                // console.log(state.number);
-
                 switch (state.state) {
                     case "RINGING":
                         alert("Phone is ringing: " + state.number);
 
                         try {
-
+                            // Event handler on any database error
                             db.on('error', function (err) { console.log('debug error: ' + err); });
-
-                            // incoming_number = state.number
 
                             params = {
                                 incoming_number : state.number,
@@ -52,9 +45,24 @@ angular.module('starter', [ 'ionic'])
 
                                     console.log('Found the document: ' + doc._id);
 
-                                    /////////  Couldn't make the factory working inside the query
-                                    ////////   gives me error everytime
-                                    // params.webService.get()
+                                    /// works
+                                    params.webService.get()
+                                        .success(function  (data, status, headers, config) {
+                                            console.log('Got response from server');
+                                            console.log(data);
+                                            console.log(status);
+
+                                        })
+                                        .error(function  (data, status, headers, config) {
+                                            console.log('Error on Webservice');
+                                            console.log(data);
+                                            console.log(status);
+                                        })
+
+                                    /// works
+                                    // var promise = params.http.get('http://192.168.0.3:1337/users')
+                                    //
+                                    // promise
                                     //     .success(function  (data, status, headers, config) {
                                     //         console.log('loggging web service: ');
                                     //         console.log('Got response from server');
@@ -63,23 +71,8 @@ angular.module('starter', [ 'ionic'])
                                     //     })
                                     //     .error(function  (data, status, headers, config) {
                                     //         console.log('Error on Webservice');
-                                    //         console.log(status);
+                                    //         console.log(status); // 0 for error, 200 for success
                                     //     })
-
-                                    console.log('Invoking a web service .. ');
-                                    var promise = params.http.get('http://localhost:1337/users')
-
-                                    promise
-                                        .success(function  (data, status, headers, config) {
-                                            console.log('loggging web service: ');
-                                            console.log('Got response from server');
-                                            console.log(status);
-                                            // console.log(response);
-                                        })
-                                        .error(function  (data, status, headers, config) {
-                                            console.log('Error on Webservice');
-                                            console.log(status);
-                                        })
 
 
                                     }
@@ -102,6 +95,95 @@ angular.module('starter', [ 'ionic'])
             });
 
       });
+
+
+
+
+      $ionicPlatform.on('pause', function() {
+                 alert("App Is Paused");
+
+                 var db = new PouchDB('callersDB');
+
+                 //////// phone call trap works anywhere in the code, but must be insdie $ionicPlatform.ready(...)
+                 PhoneCallTrap.onCall(function(state) {
+
+                     switch (state.state) {
+                         case "RINGING":
+                             alert("Phone is ringing: " + state.number);
+
+                             try {
+                                 // Event handler on any database error
+                                 db.on('error', function (err) { console.log('debug error: ' + err); });
+
+                                 params = {
+                                     incoming_number : state.number,
+                                     webService      : webService,
+                                     http            : $http
+                                 }
+
+                                 db.query(function  (doc) {
+
+                                     console.log('INITIALIZING PouchDB');
+
+                                     // Check if we have the incoming number in the database
+                                     if(doc.phone == params.incoming_number){
+
+                                         console.log('Found the document: ' + doc._id);
+
+                                         /// works
+                                         params.webService.get()
+                                             .success(function  (data, status, headers, config) {
+                                                 console.log('Got response from server');
+                                                 console.log(data);
+                                                 console.log(status);
+
+                                             })
+                                             .error(function  (data, status, headers, config) {
+                                                 console.log('Error on Webservice');
+                                                 console.log(data);
+                                                 console.log(status);
+                                             })
+
+                                         /// works
+                                         // var promise = params.http.get('http://192.168.0.3:1337/users')
+                                         //
+                                         // promise
+                                         //     .success(function  (data, status, headers, config) {
+                                         //         console.log('loggging web service: ');
+                                         //         console.log('Got response from server');
+                                         //         console.log(status);
+                                         //         // console.log(response);
+                                         //     })
+                                         //     .error(function  (data, status, headers, config) {
+                                         //         console.log('Error on Webservice');
+                                         //         console.log(status); // 0 for error, 200 for success
+                                         //     })
+
+
+                                         }
+                                 });
+
+                             } catch(e) {
+                                 console.log('PouchDB Error caught: ' + e);
+                             }
+
+
+                             break;
+                         case "OFFHOOK":
+                             console.log("Phone is off-hook");
+                             break;
+
+                         case "IDLE":
+                             console.log("Phone is idle");
+                             break;
+                         }
+                 });
+
+
+              });
+
+
+
 
 })
 
@@ -148,6 +230,17 @@ angular.module('starter', [ 'ionic'])
     });
 
 
+
+    webService.get()
+        .success(function  (data, status, headers, config) {
+            console.log('Got response from server');
+
+        })
+        .error(function  (data, status, headers, config) {
+            console.log('Error on Webservice');
+            console.log(data);
+            console.log(status);
+        })
 
 
 
@@ -234,17 +327,100 @@ angular.module('starter', [ 'ionic'])
     };
 
 
+    $scope.addDevice = function  () {
 
+        $scope.device = {};
+
+        $ionicPopup.show({
+            title    : 'Raspberry Pi Device',
+            //templateUrl : 'deviceIP.html',
+            template : '<input type="text" placeholder="192.168.0.3" ng-model="device.ip">',
+            subTitle : "Enter the IP address",
+            scope    : $scope,
+
+            buttons : [
+                {
+                    text : "<b>Save</b>",
+                    type : "button-calm",
+                    onTap: function  (event) {
+
+                        var db = new PouchDB('DeviceDB');
+
+                        db.get('deviceIp',function  (err , doc) {
+                            if(!err){
+                                db.put({
+                                    _id :'deviceIp',
+                                    _rev: doc._rev,  // must be added in updates
+                                    ip  : $scope.device.ip
+                                },function  (error , response) {
+                                    if(! error){
+                                        console.log('device ip insert/update is done.');
+                                        console.log(response);
+                                    } else {
+                                        console.log('Devicd error: ' + error);
+                                    }
+                                })
+                            } else {
+                                console.log('Cant get an element from DB: ' + err);
+                                console.log('putting a value in device IP ...');
+                                db.put({
+                                    _id :'deviceIp',
+                                    ip  : $scope.device.ip
+                                },function  (err,response) {
+                                    if(!err){
+                                        console.log('successfully put document ..' + response);
+                                    } else {
+                                        console.log('Problem putting a document .. ');
+                                    }
+                                })
+                            }
+                        })
+
+                    },
+                },
+                {
+                    text : 'Cancel',
+                    type : 'button-royal',
+                }]
+
+        }).then(function(res) {
+          console.log('Popup window result: ',res);
+        });
+    }
 
 }])
 
 
+
 .factory('webService',['$http', '$q', function ($http, $q) {
+
     console.log('Calling a webserive from factory: ');
+    console.log('Getting device IP from DB, DeviceDB');
+
+    var db = new PouchDB('DeviceDB');
+
+    // Default values if not filled by user from popup menu
+    var myFactory = {}
+    var ip = '192.168.0.3'
+    var port = '1337'
+    var location = '/'
+
+    db.get('deviceIp',function  (err , doc) {
+        if(!err){
+            console.log('Got a device IP');
+            console.log(doc);
+            console.log(doc._id);
+            ip = doc.ip
+        } else {
+            console.log('Cant get IP address from DeviceDB');
+        }
+    })
+
+    var URL = 'http://' + ip + ':' +port + location
 
     req = {
          method: 'GET',
-         url: 'http://www.google.com',
+         url: URL,
          headers: {
              'Access-Control-Allow-Origin' : '*',
   			 'Access-Control-Allow-Methods' : 'POST, GET, OPTIONS, PUT',
@@ -253,17 +429,10 @@ angular.module('starter', [ 'ionic'])
          }
          //data: { test: 'test' }
         }
-    var myFactory = {}
+
     myFactory.get = function  () {
         // return $http(req)
-        return $http.get('http://www.google.com')
+        return $http.get(URL)
     }
     return myFactory
-
-    // return $http(req)
-
-    // console.log('Google Returend ..' + returned.$$state);
-    // console.log('Google Returend ..' + returned.success);
-    // console.log('Google Returend ..' + returned.error);
-    // return returned
 }])
